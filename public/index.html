@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatting</title>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+      table th,
+      table td {
+        border: 1px solid #000;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Add product</h2>
+    <input type="text" id="id" placeholder="Enter ID" />
+    <input type="text" id="name" placeholder="Enter Name" />
+    <button onclick="addProduct()">Add Product</button>
+    <h2>Update product</h2>
+    <input type="text" id="updateName" placeholder="Enter Name" />
+    <input type="hidden" id="updateId" />
+    <button onclick="updateProduct()">Update</button>
+
+    <h1>Products</h1>
+    <table style="border: 1px solid gray">
+      <thead>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Actions</th>
+      </thead>
+      <tbody id="table-data"></tbody>
+    </table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const addBtn = document.getElementById("addBtn");
+      const UpdateBtn = document.getElementById("UpdateBtn");
+      const idInput = document.getElementById("id");
+      const nameInput = document.getElementById("name");
+      const updateName = document.getElementById("updateName");
+      const updateId = document.getElementById("updateId");
+      const tableData = document.getElementById("table-data");
+
+
+      const deleteProduct = async(id) => {
+        await fetch(`http://localhost:9000/products/${id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, })
+      };
+
+      const updateProduct = async() => {
+        const id = updateId.value
+        const name = updateName.value;
+        const product = { id, name };
+        const updatePayload = {
+          id: id,
+          updateData: { name: name },
+        };
+       await fetch(`http://localhost:9000/products/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+      };
+
+      const editProduct = (id, name) => {
+        updateId.value = id;
+        updateName.value = name;
+      };
+
+      const getAllProducts = (data) => {
+        let rows = "";
+
+        data.forEach((item) => {
+          rows += `<tr>
+    <td>${item.id}</td>
+    <td>${item.name}</td>
+    <td><button onclick="deleteProduct(${item.id})" >Delete</button></td>
+    <td><button onclick="editProduct('${item.id}', '${item.name}')" >Edit</button></td>
+    </tr>`;
+        });
+
+        tableData.innerHTML = rows;
+      };
+      socket.on("GetAllProducts", getAllProducts);
+
+      socket.on("message", (message) => {
+        const p = document.createElement("p");
+        p.innerText = message;
+        messages.appendChild(p);
+      });
+
+      const addProduct = async() => {
+        const id = idInput.value;
+        const name = nameInput.value;
+        const product = { id, name };
+         await fetch("http://localhost:9000/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, name }),
+        });
+        
+      };
+    </script>
+  </body>
+</html>
