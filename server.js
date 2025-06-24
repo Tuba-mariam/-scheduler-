@@ -3,6 +3,7 @@ import express from "express";
 import http from "http";
 import path from "path";
 import { Server } from "socket.io";
+import cron from 'node-cron';
 
 const app = express();
 const server = http.createServer(app);
@@ -20,10 +21,15 @@ let products = [
 io.on("connection", (socket) => {
   // GetAllProducts is a message name and products is a data.
 
-  setInterval(() => {
-    io.emit("GetAllProducts", products);
-    console.log("Get all proeducts");
-  }, 30000);
+  cron.schedule('*/1 * * * *', () => {
+     io.emit("GetAllProducts", products);
+  console.log('running a task every minute');
+});
+
+  // setInterval(() => {
+  //   io.emit("GetAllProducts", products);
+  //   console.log("Get all proeducts");
+  // }, 30000);
 
   app.post("/products", (req, res) => {
     try {
