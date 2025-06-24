@@ -21,9 +21,9 @@ let products = [
 io.on("connection", (socket) => {
   // GetAllProducts is a message name and products is a data.
 
-  cron.schedule('*/1 * * * *', () => {
+  cron.schedule('*/2 * * * *', () => {
      io.emit("GetAllProducts", products);
-  console.log('running a task every minute');
+  console.log('running a task every two minute');
 });
 
   // setInterval(() => {
